@@ -15,13 +15,11 @@ module.exports = {
 	execute: async (interaction, client, player) => {
 		// Prevent 'This interaction failed' messages when working with .send and .edit instead of .reply and .editReply
 		interaction.deferUpdate();
-		// Get the channel data
-		const channel = await client.channels.fetch(channelId);
-		// Function to edit the message with the player
+		// Get the channel and message data then edit message
 		const message = async (newMsg) => {
-			await channel.messages.fetch(playerMessage).then((msg) => {
-				msg.edit(newMsg);
-			});
+			const channel = await client.channels.fetch(channelId);
+			const msg = await channel.messages.fetch(playerMessage);
+			msg.edit(newMsg);
 		};
 		// Make sure the user is inside a voice channel
 		if (!interaction.member.voice.channel) {
