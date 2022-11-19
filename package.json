@@ -133,7 +133,8 @@
 		"yocto-queue": "^0.1.0"
 	},
 	"scripts": {
-		"lint": "eslint --fix --ext .js,.jsx ."
+		"lint": "eslint --fix --ext .js,.jsx .",
+		"start": "node deploy-commands.js && node index.js"
 	},
 	"keywords": [],
 	"author": "",
