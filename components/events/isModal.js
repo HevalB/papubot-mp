@@ -15,7 +15,6 @@ module.exports = {
 
 		try {
 			await modal.execute(interaction, client, player);
-			//await console.log(interaction.client);
 		} catch (error) {
 			console.error(`Error executing modal ${interaction.customId}`);
 			console.error(error);

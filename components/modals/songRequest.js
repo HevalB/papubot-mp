@@ -6,12 +6,7 @@ const {
 	ButtonStyle,
 } = require('discord.js');
 
-const {
-	channelId,
-	messageId,
-	playerMessage,
-	guildId,
-} = require('../../config.json');
+const { channelId, playerMessage, guildId } = require('../../config.json');
 
 module.exports = {
 	data: {
@@ -22,12 +17,16 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel data
 		const channel = await client.channels.fetch(channelId);
+		// Function to edit the message with the player
+		const message = async (newMsg) => {
+			await channel.messages.fetch(playerMessage).then((msg) => {
+				msg.edit(newMsg);
+			});
+		};
 		// Make sure the user is inside a voice channel
 		if (!interaction.member.voice.channel) {
-			await channel.messages.fetch(playerMessage).then((msg) => {
-				msg.edit({
-					content: `${interaction.user} you need to be in a voice channel in order to play a song/playlist.`,
-				});
+			message({
+				content: `${interaction.user} you need to be in a voice channel in order to play a song/playlist.`,
 			});
 			return;
 		}
@@ -111,11 +110,9 @@ module.exports = {
 					searchEngine: QueryType.YOUTUBE_VIDEO,
 				});
 			} else {
-				await channel.messages.fetch(playerMessage).then((msg) => {
-					msg.edit({
-						content: `No songs found with ${url}`,
-						components: [row],
-					});
+				message({
+					content: `No songs found with ${url}`,
+					components: [row],
 				});
 			}
 		} else if (songPlaylist) {
@@ -131,18 +128,15 @@ module.exports = {
 					searchEngine: QueryType.YOUTUBE_PLAYLIST,
 				});
 			} else {
-				await channel.messages.fetch(playerMessage).then((msg) => {
-					msg.edit({
-						content: `No playlists found with ${url}`,
-						components: [row],
-					});
+				message({
+					content: `No playlists found with ${url}`,
+					components: [row],
 				});
 			}
 		}
 		let embed = new EmbedBuilder();
 		// Check if request is a playlist or a song, discord-player has different methods depending on which it is
 		if (songPlaylist && result.tracks.length !== 0) {
-			console.log(result.tracks);
 			await queue.addTracks(result.tracks);
 			embed
 				.setDescription(
@@ -159,18 +153,14 @@ module.exports = {
 				.setFooter({ text: `Duration: ${result.tracks[0].duration}` });
 		} else {
 			if (queue.tracks.length !== 0) {
-				await channel.messages.fetch(playerMessage).then((msg) => {
-					msg.edit({
-						content: `No songs found with ${url}`,
-						components: [enableRow],
-					});
+				message({
+					content: `No songs found with ${url}`,
+					components: [enableRow],
 				});
 			} else {
-				await channel.messages.fetch(playerMessage).then((msg) => {
-					msg.edit({
-						content: `No songs found with ${url}`,
-						components: [row],
-					});
+				message({
+					content: `No songs found with ${url}`,
+					components: [row],
 				});
 			}
 		}
@@ -190,20 +180,18 @@ module.exports = {
 			.join('\n');
 		// Update the player message
 		if (await result.tracks[0]) {
-			await channel.messages.fetch(playerMessage).then((msg) => {
-				msg.edit({
-					content: `${interaction.user} your song request has been successfully received!`,
-					embeds: [
-						new EmbedBuilder().setDescription(
-							`**Currently Playing**\n` +
-								(currentSong
-									? `\`[${currentSong.duration}]\` ${currentSong.title} - ${currentSong.author} - <@${currentSong.requestedBy.id}>`
-									: 'None') +
-								`\n\n**Queue**\n${queueString}`
-						),
-					],
-					components: [enableRow],
-				});
+			message({
+				content: `${interaction.user} your song request has been successfully received!`,
+				embeds: [
+					new EmbedBuilder().setDescription(
+						`**Currently Playing**\n` +
+							(currentSong
+								? `\`[${currentSong.duration}]\` ${currentSong.title} - ${currentSong.author} - <@${currentSong.requestedBy.id}>`
+								: 'None') +
+							`\n\n**Queue**\n${queueString}`
+					),
+				],
+				components: [enableRow],
 			});
 		}
 		// Constantly check if song is buffering, play gets stuck if it is. .play() method needs to be called again if that is the case.

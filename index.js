@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { token, guildId } = require('./config.json');
+const { token } = require('./config.json');
 
 const { Player } = require('discord-player');
 
@@ -101,18 +101,6 @@ for (const file of modalFiles) {
 		);
 	}
 }
-/*
-player.queues.on('1040174713839824986', async (player) => {
-	player.queues
-		.get('1040174713839824986')
-		.connection.audioPlayer._state.status.on('buffering', async (player) => {
-			console.log('BUFFERING!!!!!!');
-			const nextTrack = player.queues.get('1040174713839824986').tracks.shift();
-			player.queues
-				.get('1040174713839824986')
-				.play(nextTrack, { immediate: true });
-		});
-});
-*/
+
 // Log in to Discord with your client's token
 client.login(token);

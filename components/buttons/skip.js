@@ -4,14 +4,7 @@ const {
 	ButtonBuilder,
 	ButtonStyle,
 } = require('discord.js');
-const { update } = require('lodash');
-const { setTokenSourceMapRange } = require('typescript');
-const {
-	channelId,
-	messageId,
-	playerMessage,
-	guildId,
-} = require('../../config.json');
+const { channelId, playerMessage } = require('../../config.json');
 
 module.exports = {
 	data: { name: 'skip' },
@@ -20,6 +13,12 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel data
 		const channel = await client.channels.fetch(channelId);
+		// Function to edit the message with the player
+		const message = async (newMsg) => {
+			await channel.messages.fetch(playerMessage).then((msg) => {
+				msg.edit(newMsg);
+			});
+		};
 		// Enable buttons
 		const enableRow = new ActionRowBuilder().addComponents(
 			new ButtonBuilder()
@@ -68,20 +67,18 @@ module.exports = {
 			return `${song.title} - ${song.author} - has been skipped by ${interaction.user}`;
 		});
 		// Update the discord message of where the player resides
-		await channel.messages.fetch(playerMessage).then((msg) => {
-			msg.edit({
-				content: `${prevSong}`,
-				embeds: [
-					new EmbedBuilder().setDescription(
-						`**Currently Playing**\n` +
-							(currentSong
-								? `\`[${currentSong.duration}]\` ${currentSong.title} - ${currentSong.author} - ${interaction.user}`
-								: 'None') +
-							`\n\n**Queue**\n${queueString}`
-					),
-				],
-				components: [enableRow],
-			});
+		message({
+			content: `${prevSong}`,
+			embeds: [
+				new EmbedBuilder().setDescription(
+					`**Currently Playing**\n` +
+						(currentSong
+							? `\`[${currentSong.duration}]\` ${currentSong.title} - ${currentSong.author} - ${interaction.user}`
+							: 'None') +
+						`\n\n**Queue**\n${queueString}`
+				),
+			],
+			components: [enableRow],
 		});
 	},
 };

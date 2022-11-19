@@ -1,10 +1,4 @@
-const {
-	Events,
-	EmbedBuilder,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-} = require('discord.js');
+const { Events } = require('discord.js');
 
 // When the client is ready, run this code (only once)
 module.exports = {

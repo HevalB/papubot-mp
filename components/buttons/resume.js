@@ -1,4 +1,3 @@
-const { EmbedBuilder } = require('discord.js');
 const { channelId, playerMessage } = require('../../config.json');
 
 module.exports = {
@@ -8,14 +7,18 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel data
 		const channel = await client.channels.fetch(channelId);
+		// Function to edit the message with the player
+		const message = async (newMsg) => {
+			await channel.messages.fetch(playerMessage).then((msg) => {
+				msg.edit(newMsg);
+			});
+		};
 		// Get the queue for the player
 		const queue = player.getQueue(interaction.guildId);
 		// Check if the queue is empty
 		if (!queue) {
-			await channel.messages.fetch(playerMessage).then((msg) => {
-				msg.edit({
-					content: `${interaction.user} there are currently no songs in the queue.`,
-				});
+			message({
+				content: `${interaction.user} there are currently no songs in the queue.`,
 			});
 			return;
 		}
@@ -23,10 +26,8 @@ module.exports = {
 		queue.setPaused(false);
 		queue.play(queue.nowPlaying());
 		// Get the message and edit it
-		await channel.messages.fetch(playerMessage).then((msg) => {
-			msg.edit({
-				content: `The player has been resumed by ${interaction.user}.`,
-			});
+		message({
+			content: `The player has been resumed by ${interaction.user}.`,
 		});
 	},
 };

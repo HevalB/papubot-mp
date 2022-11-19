@@ -15,7 +15,6 @@ module.exports = {
 
 		try {
 			await button.execute(interaction, client, player);
-			//await console.log(interaction.client);
 		} catch (error) {
 			console.error(`Error executing button ${interaction.customId}`);
 			console.error(error);

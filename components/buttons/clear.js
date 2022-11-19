@@ -4,7 +4,7 @@ const {
 	ButtonBuilder,
 	ButtonStyle,
 } = require('discord.js');
-const { channelId, messageId, playerMessage } = require('../../config.json');
+const { channelId, playerMessage } = require('../../config.json');
 
 module.exports = {
 	data: { name: 'clear' },
@@ -13,6 +13,12 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel data
 		const channel = await client.channels.fetch(channelId);
+		// Function to edit the message with the player
+		const message = async (newMsg) => {
+			await channel.messages.fetch(playerMessage).then((msg) => {
+				msg.edit(newMsg);
+			});
+		};
 		// Get the current queue
 		const queue = await player.getQueue(interaction.guildId);
 		// Disable all of these buttons if there are no songs in the queue
@@ -44,26 +50,22 @@ module.exports = {
 		);
 		// If there is no queue, return
 		if (!queue) {
-			await channel.messages.fetch(playerMessage).then((msg) => {
-				msg.edit({
-					content: `${interaction.user} there are currently no songs in the queue.`,
-					components: [row],
-				});
+			message({
+				content: `${interaction.user} there are currently no songs in the queue.`,
+				components: [row],
 			});
 			return;
 		}
 		// Deletes all the songs from the queue and exits the voice channel
 		queue.destroy();
-		await channel.messages.fetch(playerMessage).then((msg) => {
-			msg.edit({
-				content: `The queue has been cleared by ${interaction.user}!`,
-				embeds: [
-					new EmbedBuilder().setDescription(
-						`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
-					),
-				],
-				components: [row],
-			});
+		message({
+			content: `The queue has been cleared by ${interaction.user}!`,
+			embeds: [
+				new EmbedBuilder().setDescription(
+					`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
+				),
+			],
+			components: [row],
 		});
 	},
 };
