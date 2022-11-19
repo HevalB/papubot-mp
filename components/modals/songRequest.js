@@ -191,6 +191,7 @@ module.exports = {
 				components: [enableRow],
 			});
 		}
+
 		// Constantly check if song is buffering, play gets stuck if it is. .play() method needs to be called again if that is the case.
 		const checkBuffering = () => {
 			if (!player.queues.get(process.env.GUILDID)?.connection) {

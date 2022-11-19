@@ -1,7 +1,12 @@
 // Require the necessary discord.js classes
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const {
+	Client,
+	GatewayIntentBits,
+	Collection,
+	EmbedBuilder,
+} = require('discord.js');
 require('dotenv').config();
 
 const { Player } = require('discord-player');
@@ -101,6 +106,34 @@ for (const file of modalFiles) {
 		);
 	}
 }
+
+const message = async (newMsg) => {
+	const channel = await client.channels.fetch(process.env.CHANNELID);
+	const msg = await channel.messages.fetch(process.env.PLAYERMESSAGE);
+	msg.edit(newMsg);
+};
+
+player.on('trackStart', (queue, track) => {
+	const queueString = queue.tracks
+		.slice(0, 20)
+		.map((song, i) => {
+			return `${i + 1}) \`[${song.duration}]\` ${song.title} - ${
+				song.author
+			} - <@${song.requestedBy.id}>`;
+		})
+		.join('\n');
+	message({
+		embeds: [
+			new EmbedBuilder().setDescription(
+				`**Currently Playing**\n` +
+					(queue.current
+						? `\`[${queue.current.duration}]\` ${queue.current.title} - ${queue.current.author} - <@${queue.current.requestedBy.id}>`
+						: 'None') +
+					`\n\n**Queue**\n${queueString}`
+			),
+		],
+	});
+});
 
 // Log in to Discord with your client's token
 client.login(process.env.TOKEN);
