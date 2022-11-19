@@ -1,1 +1,1 @@
-Worker: npm start
+Worker: node deploy-commands.js && node index.js
