@@ -5,8 +5,7 @@ const {
 	ButtonBuilder,
 	ButtonStyle,
 } = require('discord.js');
-
-const { channelId, playerMessage, guildId } = require('../../config.json');
+require('dotenv').config();
 
 module.exports = {
 	data: {
@@ -17,8 +16,8 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel and message data then edit message
 		const message = async (newMsg) => {
-			const channel = await client.channels.fetch(channelId);
-			const msg = await channel.messages.fetch(playerMessage);
+			const channel = await client.channels.fetch(process.env.CHANNELID);
+			const msg = await channel.messages.fetch(process.env.PLAYERMESSAGE);
 			msg.edit(newMsg);
 		};
 		// Make sure the user is inside a voice channel
@@ -194,11 +193,11 @@ module.exports = {
 		}
 		// Constantly check if song is buffering, play gets stuck if it is. .play() method needs to be called again if that is the case.
 		const checkBuffering = () => {
-			if (!player.queues.get(guildId)?.connection) {
+			if (!player.queues.get(process.env.GUILDID)?.connection) {
 				stopBufferingTimer();
 			} else if (
-				player.queues.get(guildId).connection.audioPlayer._state.status ===
-				'buffering'
+				player.queues.get(process.env.GUILDID).connection.audioPlayer._state
+					.status === 'buffering'
 			) {
 				queue.play(queue.current, { immediate: true });
 			}

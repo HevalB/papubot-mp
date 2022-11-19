@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { token } = require('./config.json');
+require('dotenv').config();
 
 const { Player } = require('discord-player');
 
@@ -103,4 +103,4 @@ for (const file of modalFiles) {
 }
 
 // Log in to Discord with your client's token
-client.login(token);
+client.login(process.env.TOKEN);

@@ -1,4 +1,4 @@
-const { channelId, playerMessage } = require('../../config.json');
+require('dotenv').config();
 
 module.exports = {
 	data: { name: 'pause' },
@@ -7,8 +7,8 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel and message data then edit message
 		const message = async (newMsg) => {
-			const channel = await client.channels.fetch(channelId);
-			const msg = await channel.messages.fetch(playerMessage);
+			const channel = await client.channels.fetch(process.env.CHANNELID);
+			const msg = await channel.messages.fetch(process.env.PLAYERMESSAGE);
 			msg.edit(newMsg);
 		};
 		// Get the queue for the player
