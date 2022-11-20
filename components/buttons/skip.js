@@ -93,7 +93,7 @@ module.exports = {
 		} else {
 			queue.destroy();
 			message({
-				content: `Queue has no more songs left in it.`,
+				content: `Queue has ended. Add more songs to it to resume play.`,
 				embeds: [
 					new EmbedBuilder().setDescription(
 						`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
