@@ -8,8 +8,11 @@ const {
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('template')
-		.setDescription('Creates player template.'),
-	async execute(interaction) {
+		.setDescription(
+			"Creates player template. Must have a text channel named '#music-bot' to use this command."
+		),
+	async execute(interaction, client) {
+		/*
 		const row = new ActionRowBuilder().addComponents(
 			new ButtonBuilder()
 				.setCustomId('add')
@@ -40,5 +43,21 @@ module.exports = {
 			content: 'Template',
 			components: [row],
 		});
+		*/
+		const channel = await client.channels.fetch(interaction.channelId);
+		const messages = await channel.messages.fetch();
+
+		if (channel.name.includes('music-bot')) {
+			messages.map((msg) => {
+				if (
+					msg.embeds.length !== 0 &&
+					msg.embeds[0].data.description.includes('Queue')
+				) {
+					msg.edit({ content: 'blaa' });
+				}
+			});
+		} else {
+			console.log('NOT IN MUSIC CHANNEL');
+		}
 	},
 };

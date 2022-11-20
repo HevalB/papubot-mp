@@ -16,9 +16,27 @@ module.exports = {
 		interaction.deferUpdate();
 		// Get the channel and message data then edit message
 		const message = async (newMsg) => {
-			const channel = await client.channels.fetch(process.env.CHANNELID);
-			const msg = await channel.messages.fetch(process.env.PLAYERMESSAGE);
-			msg.edit(newMsg);
+			// Channel and message data
+			const channel = await client.channels.fetch(interaction.channelId);
+			const messages = await channel.messages.fetch();
+			// Check if user is executing the command from text channel 'music-bot'
+			if (channel.name.includes('music-bot')) {
+				// map the array returned by messages
+				messages.map((msg) => {
+					// Check if string 'Queue' exists inside a message embed in the channel
+					if (
+						msg.embeds.length !== 0 &&
+						msg.embeds[0].data.description.includes('Queue')
+					) {
+						// if so, edit message
+						msg.edit(newMsg);
+					} else {
+						console.log('ERROR! Couldnt find player message.');
+					}
+				});
+			} else {
+				console.log('NOT IN MUSIC CHANNEL');
+			}
 		};
 		// Make sure the user is inside a voice channel
 		if (!interaction.member.voice.channel) {
@@ -82,6 +100,7 @@ module.exports = {
 		// Wait until you are connected to the channel
 		if (!queue.connection)
 			await queue.connect(interaction.member.voice.channel);
+
 		// Variables for the string inside of the input modal
 		const url = await interaction.fields.getTextInputValue('songUrlInput');
 		const urlConditions = ['track', 'watch?v'];
@@ -194,10 +213,10 @@ module.exports = {
 
 		// Constantly check if song is buffering, play gets stuck if it is. .play() method needs to be called again if that is the case.
 		const checkBuffering = () => {
-			if (!player.queues.get(process.env.GUILDID)?.connection) {
+			if (!player.queues.get(interaction.guildId)?.connection) {
 				stopBufferingTimer();
 			} else if (
-				player.queues.get(process.env.GUILDID).connection.audioPlayer._state
+				player.queues.get(interaction.guildId).connection.audioPlayer._state
 					.status === 'buffering'
 			) {
 				queue.play(queue.current, { immediate: true });

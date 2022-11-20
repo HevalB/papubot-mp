@@ -106,13 +106,26 @@ for (const file of modalFiles) {
 		);
 	}
 }
-
+/*
+// Get the channel and message data then edit message
 const message = async (newMsg) => {
-	const channel = await client.channels.fetch(process.env.CHANNELID);
-	const msg = await channel.messages.fetch(process.env.PLAYERMESSAGE);
-	msg.edit(newMsg);
+	const channel = await client.channels.fetch(interaction.channelId);
+	const messages = await channel.messages.fetch();
+	if (channel.name.includes('music-bot')) {
+		messages.map((msg) => {
+			if (
+				msg.embeds.length !== 0 &&
+				msg.embeds[0].data.description.includes('Queue')
+			) {
+				msg.edit(newMsg);
+			}
+		});
+	} else {
+		console.log('NOT IN MUSIC CHANNEL');
+	}
 };
-
+*/
+/*
 player.on('trackStart', (queue, track) => {
 	const queueString = queue.tracks
 		.slice(0, 20)
@@ -134,6 +147,6 @@ player.on('trackStart', (queue, track) => {
 		],
 	});
 });
-
+*/
 // Log in to Discord with your client's token
 client.login(process.env.TOKEN);

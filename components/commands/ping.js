@@ -4,13 +4,22 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
-	async execute(interaction) {
+	async execute(interaction, client) {
 		/*
 		await interaction.reply({
 			content: `Pong! Websocked heartbeat: ${interaction.client.ws.ping}ms.`,
 			ephemeral: true,
 		});
 		*/
+		const channel = await client.channels.fetch(interaction.channelId);
+		const messages = await channel.messages.fetch();
+
+		messages.map((msg) => {
+			if (msg.content.includes('song')) {
+				console.log(msg.content);
+			}
+		});
+
 		const sent = await interaction.reply({
 			content: 'Pinging...',
 			fetchReply: true,
