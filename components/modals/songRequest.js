@@ -96,7 +96,14 @@ module.exports = {
 				.setStyle(ButtonStyle.Danger)
 		);
 		// Create a play queue for the server
-		const queue = await player.createQueue(interaction.guild);
+		const queue = await player.createQueue(interaction.guild, {
+			options: {
+				leaveOnEnd: true,
+			},
+			metadata: {
+				channel: interaction.channel,
+			},
+		});
 		// Wait until you are connected to the channel
 		if (!queue.connection)
 			await queue.connect(interaction.member.voice.channel);

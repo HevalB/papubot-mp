@@ -1,9 +1,9 @@
 const { Events, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-	name: 'trackStart',
+	name: 'queueEnd',
 	async execute(queue) {
-		console.log('track start');
+		console.log('queue end');
 		const message = async (newMsg) => {
 			const channel = await queue.player.client.channels.fetch(
 				queue.metadata.channel.id
@@ -23,27 +23,13 @@ module.exports = {
 			}
 		};
 
-		const queueString = queue.tracks
-			.slice(0, 20)
-			.map((song, i) => {
-				return `${i + 1}) \`[${song.duration}]\` ${song.title} - ${
-					song.author
-				} - <@${song.requestedBy.id}>`;
-			})
-			.join('\n');
-		const currentSong = queue.current;
-
 		message({
+			content: 'Queue has ended. Add more songs to it to resume play.',
 			embeds: [
 				new EmbedBuilder().setDescription(
-					`**Currently Playing**\n` +
-						(currentSong
-							? `\`[${currentSong.duration}]\` ${currentSong.title} - ${currentSong.author} - <@${currentSong.requestedBy.id}>`
-							: 'None') +
-						`\n\n**Queue**\n${queueString}`
+					`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
 				),
 			],
 		});
-		console.log('NEXT SONG, trackStart.js executed.');
 	},
 };
