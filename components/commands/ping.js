@@ -5,12 +5,6 @@ module.exports = {
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
 	async execute(interaction, client) {
-		/*
-		await interaction.reply({
-			content: `Pong! Websocked heartbeat: ${interaction.client.ws.ping}ms.`,
-			ephemeral: true,
-		});
-		*/
 		const channel = await client.channels.fetch(interaction.channelId);
 		const messages = await channel.messages.fetch();
 
@@ -24,6 +18,7 @@ module.exports = {
 			content: 'Pinging...',
 			fetchReply: true,
 		});
+
 		await interaction.editReply({
 			content: `Pong again! Roundtrip latency: ${
 				sent.createdTimestamp - interaction.createdTimestamp

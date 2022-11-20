@@ -42,21 +42,9 @@ module.exports = {
 
 		const channel = await client.channels.fetch(interaction.channelId);
 		const messages = await channel.messages.fetch();
-		/*
-		const newPlayer = await interaction.channel.send({
-			content: 'There are no songs in the queue. Click add to play some music.',
-			embeds: [
-				new EmbedBuilder().setDescription(
-					`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
-				),
-			],
-			components: [row],
-		});
-		*/
 
 		if (channel.name.includes('music-bot')) {
 			if (messages.size === 0) {
-				//await interaction.deferReply({ content: 'player', embeds: ['Queue'] });
 				await interaction.channel.send({
 					content:
 						'There are no songs in the queue. Click add to play some music.',

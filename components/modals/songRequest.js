@@ -14,21 +14,17 @@ module.exports = {
 	execute: async (interaction, client, player) => {
 		// Prevent 'This interaction failed' messages when working with .send and .edit instead of .reply and .editReply
 		interaction.deferUpdate();
+
 		// Get the channel and message data then edit message
 		const message = async (newMsg) => {
-			// Channel and message data
 			const channel = await client.channels.fetch(interaction.channelId);
 			const messages = await channel.messages.fetch();
-			// Check if user is executing the command from text channel 'music-bot'
 			if (channel.name.includes('music-bot')) {
-				// map the array returned by messages
 				messages.map((msg) => {
-					// Check if string 'Queue' exists inside a message embed in the channel
 					if (
 						msg.embeds.length !== 0 &&
 						msg.embeds[0].data.description.includes('Queue')
 					) {
-						// if so, edit message
 						msg.edit(newMsg);
 					} else {
 						console.log('ERROR! Couldnt find player message.');
@@ -38,6 +34,7 @@ module.exports = {
 				console.log('NOT IN MUSIC CHANNEL');
 			}
 		};
+
 		// Make sure the user is inside a voice channel
 		if (!interaction.member.voice.channel) {
 			message({
@@ -45,6 +42,7 @@ module.exports = {
 			});
 			return;
 		}
+
 		// Disable buttons
 		const row = new ActionRowBuilder().addComponents(
 			new ButtonBuilder()
@@ -72,6 +70,7 @@ module.exports = {
 				.setStyle(ButtonStyle.Danger)
 				.setDisabled(true)
 		);
+
 		// Enable buttons
 		const enableRow = new ActionRowBuilder().addComponents(
 			new ButtonBuilder()
@@ -95,6 +94,7 @@ module.exports = {
 				.setLabel('Clear')
 				.setStyle(ButtonStyle.Danger)
 		);
+
 		// Create a play queue for the server
 		const queue = await player.createQueue(interaction.guild, {
 			options: {
@@ -104,6 +104,7 @@ module.exports = {
 				channel: interaction.channel,
 			},
 		});
+
 		// Wait until you are connected to the channel
 		if (!queue.connection)
 			await queue.connect(interaction.member.voice.channel);
@@ -114,6 +115,7 @@ module.exports = {
 		const urlExclusions = ['www', 'http', 'https'];
 		const songPlaylist = url.includes('list');
 		let result;
+
 		// Check what the user input is and act accordingly
 		if (!urlExclusions.some((condition) => url.includes(condition))) {
 			result = await player.search(url, {
@@ -157,42 +159,37 @@ module.exports = {
 				});
 			}
 		}
-		let embed = new EmbedBuilder();
+
 		// Check if request is a playlist or a song, discord-player has different methods depending on which it is
 		if (songPlaylist && result.tracks.length !== 0) {
+			console.log('playlist added');
 			await queue.addTracks(result.tracks);
-			embed
-				.setDescription(
-					`**${result.tracks.length} songs from [${result.playlist.title}](${result.playlist.url})** have been added to the Queue`
-				)
-				.setThumbnail(result.playlist.thumbnail.url);
+			message({
+				content: `**${result.tracks.length} songs from ${result.playlist.title}** have been added to the queue by <@${queue.current.requestedBy.id}>`,
+			});
 		} else if (result.tracks[0]) {
 			await queue.addTrack(result.tracks[0]);
-			embed
-				.setDescription(
-					`**[${result.tracks[0].title}](${result.tracks[0].url})** has been added to the Queue`
-				)
-				.setThumbnail(result.tracks[0].thumbnail)
-				.setFooter({ text: `Duration: ${result.tracks[0].duration}` });
+			message({
+				content: `**${result.tracks[0].title}** has been added to the queue by <@${queue.current.requestedBy.id}>`,
+			});
 		} else {
 			if (queue.tracks.length !== 0) {
 				message({
-					content: `No songs found with ${url}`,
+					content: `<@${queue.current.requestedBy.id}>No songs found with ${url}`,
 					components: [enableRow],
 				});
 			} else {
 				message({
-					content: `No songs found with ${url}`,
+					content: `<@${queue.current.requestedBy.id}>No songs found with ${url}`,
 					components: [row],
 				});
 			}
 		}
+
 		// Play the song
 		if (!queue.playing)
 			await queue.play(queue.tracks.shift(), { immediate: true });
-		// Get the current song
-		const currentSong = queue.current;
-		// Get the first 20 songs in the queue
+
 		const queueString = queue.tracks
 			.slice(0, 20)
 			.map((song, i) => {
@@ -201,6 +198,7 @@ module.exports = {
 				} - <@${song.requestedBy.id}>`;
 			})
 			.join('\n');
+		const currentSong = queue.current;
 		// Update the player message
 		if (await result.tracks[0]) {
 			message({
@@ -218,7 +216,7 @@ module.exports = {
 			});
 		}
 
-		// Constantly check if song is buffering, play gets stuck if it is. .play() method needs to be called again if that is the case.
+		// Check if song is buffering, play gets stuck if it is. .play() method needs to be called again if that is the case.
 		const checkBuffering = () => {
 			if (!player.queues.get(interaction.guildId)?.connection) {
 				stopBufferingTimer();
@@ -229,9 +227,13 @@ module.exports = {
 				queue.play(queue.current, { immediate: true });
 			}
 		};
+
+		// Execute checkBuffering() every 5 seconds.
 		const bufferingTimer = setInterval(() => {
 			checkBuffering();
 		}, 5000);
+
+		// Clear the bufferingTimer interval set for checkBuffering()
 		const stopBufferingTimer = () => {
 			clearInterval(bufferingTimer);
 		};

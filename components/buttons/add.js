@@ -12,12 +12,11 @@ module.exports = {
 		const modal = new ModalBuilder()
 			.setCustomId('songRequest')
 			.setTitle('Song request');
+
 		// Create the text input components
 		const songUrlInput = new TextInputBuilder()
 			.setCustomId('songUrlInput')
-			// The label is the prompt the user sees for this input
 			.setLabel('What is the URL of the song/playlist?')
-			// Short means only a single line of text
 			.setStyle(TextInputStyle.Short)
 			.setPlaceholder(
 				"If you don't enter an URL, I'll use this as a search term."

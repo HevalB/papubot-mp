@@ -3,7 +3,6 @@ const { Events, EmbedBuilder } = require('discord.js');
 module.exports = {
 	name: 'trackStart',
 	async execute(queue) {
-		console.log('track start');
 		const message = async (newMsg) => {
 			const channel = await queue.player.client.channels.fetch(
 				queue.metadata.channel.id
@@ -44,6 +43,5 @@ module.exports = {
 				),
 			],
 		});
-		console.log('NEXT SONG, trackStart.js executed.');
 	},
 };

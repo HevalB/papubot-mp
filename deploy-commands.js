@@ -24,7 +24,7 @@ client.on('ready', () => {
 
 		// Construct and prepare an instance of the REST module
 		const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-		// and deploy the commands!
+		// Deploy the commands
 		(async () => {
 			try {
 				console.log(
@@ -42,15 +42,18 @@ client.on('ready', () => {
 					`Successfully reloaded ${data.length} application (/) commands.`
 				);
 			} catch (error) {
-				// And of course, make sure to catch and log any errors!
+				// Catch and log errors
 				console.error(error);
 			}
 		})();
 	};
+
+	// Execute all of the above for every guild.id found on the client.
 	client.guilds.cache.map((guild) => {
 		updateCommands(guild.id);
 		console.log(guild.id);
 	});
+	// Logout of the client once finished deploying commands
 	client.destroy();
 });
 
