@@ -58,15 +58,53 @@ module.exports = {
 				.setLabel('Clear')
 				.setStyle(ButtonStyle.Danger)
 		);
+		// Disable buttons
+		const row = new ActionRowBuilder().addComponents(
+			new ButtonBuilder()
+				.setCustomId('add')
+				.setLabel('Add')
+				.setStyle(ButtonStyle.Success),
+			new ButtonBuilder()
+				.setCustomId('skip')
+				.setLabel('Skip')
+				.setStyle(ButtonStyle.Primary)
+				.setDisabled(true),
+			new ButtonBuilder()
+				.setCustomId('pause')
+				.setLabel('Pause')
+				.setStyle(ButtonStyle.Primary)
+				.setDisabled(true),
+			new ButtonBuilder()
+				.setCustomId('resume')
+				.setLabel('Resume')
+				.setStyle(ButtonStyle.Primary)
+				.setDisabled(true),
+			new ButtonBuilder()
+				.setCustomId('clear')
+				.setLabel('Clear')
+				.setStyle(ButtonStyle.Danger)
+				.setDisabled(true)
+		);
 		// Create a play queue for the server
 		const queue = await player.getQueue(interaction.guildId);
 		// Skip song, used .play method instead of .skip because the latter causes buffering issues
-		if (queue) {
-			await queue.play(queue.tracks.shift(), { immediate: true });
+		if (queue.tracks.length !== 0) {
+			queue.play(queue.tracks.shift(), { immediate: true });
+		} else {
+			queue.destroy();
+			message({
+				content: `Queue has no more songs left in it.`,
+				embeds: [
+					new EmbedBuilder().setDescription(
+						`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
+					),
+				],
+				components: [row],
+			});
+			return;
 		}
 		// Wait until you are connected to the channel
-		if (!queue.connection)
-			await queue.connect(interaction.member.voice.channel);
+		if (!queue.connection) queue.connect(interaction.member.voice.channel);
 		// Get the current song
 		const currentSong = queue.current;
 		// Get the first 20 songs in the queue
