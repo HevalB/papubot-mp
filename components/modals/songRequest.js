@@ -1,13 +1,9 @@
 const { QueryType } = require('discord-player');
-const {
-	EmbedBuilder,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-} = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 require('dotenv').config();
 const youtube_sr_1 = require('youtube-sr');
 const ytdl_core_1 = require('ytdl-core');
+const playerButtons = require('../actionrows/playerButtons.js');
 
 module.exports = {
 	data: {
@@ -17,85 +13,34 @@ module.exports = {
 		// Prevent 'This interaction failed' messages when working with .send and .edit instead of .reply and .editReply
 		interaction.deferUpdate();
 
-		// Get the channel and message data then edit message
-		const message = async (newMsg) => {
-			const channel = await client.channels.fetch(interaction.channelId);
-			const messages = await channel.messages.fetch();
-			if (channel.name.includes('music-bot')) {
-				messages.map((msg) => {
-					if (
-						msg.embeds.length !== 0 &&
-						msg.embeds[0].data.description.includes('Queue')
-					) {
-						msg.edit(newMsg);
-					} else {
-						console.log('ERROR! Couldnt find player message.');
-					}
-				});
-			} else {
-				console.log('NOT IN MUSIC CHANNEL');
-			}
+		module.exports.message = {
+			// Get the channel and message data then edit message
+			message: async (newMsg) => {
+				const channel = await client.channels.fetch(interaction.channelId);
+				const messages = await channel.messages.fetch();
+				if (channel.name.includes('music-bot')) {
+					messages.map((msg) => {
+						if (
+							msg.embeds.length !== 0 &&
+							msg.embeds[0].data.description.includes('Queue')
+						) {
+							msg.edit(newMsg);
+						} else {
+							console.log('ERROR! Couldnt find player message.');
+						}
+					});
+				} else {
+					console.log('NOT IN MUSIC CHANNEL');
+				}
+			},
 		};
-
 		// Make sure the user is inside a voice channel
 		if (!interaction.member.voice.channel) {
-			message({
+			module.message({
 				content: `${interaction.user} you need to be in a voice channel in order to play a song/playlist.`,
 			});
 			return;
 		}
-
-		// Disable buttons
-		const row = new ActionRowBuilder().addComponents(
-			new ButtonBuilder()
-				.setCustomId('add')
-				.setLabel('Add')
-				.setStyle(ButtonStyle.Success),
-			new ButtonBuilder()
-				.setCustomId('skip')
-				.setLabel('Skip')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(true),
-			new ButtonBuilder()
-				.setCustomId('pause')
-				.setLabel('Pause')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(true),
-			new ButtonBuilder()
-				.setCustomId('resume')
-				.setLabel('Resume')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(true),
-			new ButtonBuilder()
-				.setCustomId('clear')
-				.setLabel('Clear')
-				.setStyle(ButtonStyle.Danger)
-				.setDisabled(true)
-		);
-
-		// Enable buttons
-		const enableRow = new ActionRowBuilder().addComponents(
-			new ButtonBuilder()
-				.setCustomId('add')
-				.setLabel('Add')
-				.setStyle(ButtonStyle.Success),
-			new ButtonBuilder()
-				.setCustomId('skip')
-				.setLabel('Skip')
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId('pause')
-				.setLabel('Pause')
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId('resume')
-				.setLabel('Resume')
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId('clear')
-				.setLabel('Clear')
-				.setStyle(ButtonStyle.Danger)
-		);
 
 		// Create a play queue for the server
 		const queue = await player.createQueue(interaction.guild, {
@@ -113,7 +58,6 @@ module.exports = {
 
 		// Variables for the string inside of the input modal
 		const url = await interaction.fields.getTextInputValue('songUrlInput');
-		const urlExclusions = ['www', 'http', 'https'];
 		const songPlaylist = url.includes('list');
 		let result;
 
@@ -162,24 +106,24 @@ module.exports = {
 		if (songPlaylist && result.tracks.length !== 0) {
 			console.log('playlist added');
 			await queue.addTracks(result.tracks);
-			message({
+			module.exports.message.message({
 				content: `**${result.tracks.length} songs from ${result.playlist.title}** have been added to the queue by <@${queue.current.requestedBy.id}>`,
 			});
 		} else if (result.tracks[0]) {
 			await queue.addTrack(result.tracks[0]);
-			message({
+			module.exports.message.message({
 				content: `**${result.tracks[0].title}** has been added to the queue by <@${queue.current.requestedBy.id}>`,
 			});
 		} else {
 			if (queue.tracks.length !== 0) {
-				message({
+				module.exports.message.message({
 					content: `<@${queue.current.requestedBy.id}>No songs found with ${url}`,
-					components: [enableRow],
+					components: [playerButtons.enabled],
 				});
 			} else {
-				message({
+				module.exports.message.message({
 					content: `<@${queue.current.requestedBy.id}>No songs found with ${url}`,
-					components: [row],
+					components: [playerButtons.disabled],
 				});
 			}
 		}
@@ -199,7 +143,7 @@ module.exports = {
 		const currentSong = queue.current;
 		// Update the player message
 		if (await result.tracks[0]) {
-			message({
+			module.exports.message.message({
 				content: `${interaction.user} your song request has been successfully received!`,
 				embeds: [
 					new EmbedBuilder().setDescription(
@@ -210,7 +154,7 @@ module.exports = {
 							`\n\n**Queue**\n${queueString}`
 					),
 				],
-				components: [enableRow],
+				components: [playerButtons.enabled],
 			});
 		}
 

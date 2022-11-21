@@ -1,88 +1,14 @@
-const {
-	EmbedBuilder,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
-} = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 require('dotenv').config();
+
+const request = require('../modals/songRequest.js');
+const playerButtons = require('../actionrows/playerButtons.js');
 
 module.exports = {
 	data: { name: 'skip' },
 	execute: async (interaction, client, player) => {
 		// Prevent 'This interaction failed' messages when working with .send and .edit instead of .reply and .editReply
 		interaction.deferUpdate();
-
-		// Get the channel and message data then edit message
-		const message = async (newMsg) => {
-			const channel = await client.channels.fetch(interaction.channelId);
-			const messages = await channel.messages.fetch();
-			if (channel.name.includes('music-bot')) {
-				messages.map((msg) => {
-					if (
-						msg.embeds.length !== 0 &&
-						msg.embeds[0].data.description.includes('Queue')
-					) {
-						msg.edit(newMsg);
-					} else {
-						console.log('ERROR! Couldnt find player message.');
-					}
-				});
-			} else {
-				console.log('NOT IN MUSIC CHANNEL');
-			}
-		};
-
-		// Enable buttons
-		const enableRow = new ActionRowBuilder().addComponents(
-			new ButtonBuilder()
-				.setCustomId('add')
-				.setLabel('Add')
-				.setStyle(ButtonStyle.Success),
-			new ButtonBuilder()
-				.setCustomId('skip')
-				.setLabel('Skip')
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId('pause')
-				.setLabel('Pause')
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId('resume')
-				.setLabel('Resume')
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId('clear')
-				.setLabel('Clear')
-				.setStyle(ButtonStyle.Danger)
-		);
-
-		// Disable buttons
-		const row = new ActionRowBuilder().addComponents(
-			new ButtonBuilder()
-				.setCustomId('add')
-				.setLabel('Add')
-				.setStyle(ButtonStyle.Success),
-			new ButtonBuilder()
-				.setCustomId('skip')
-				.setLabel('Skip')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(true),
-			new ButtonBuilder()
-				.setCustomId('pause')
-				.setLabel('Pause')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(true),
-			new ButtonBuilder()
-				.setCustomId('resume')
-				.setLabel('Resume')
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(true),
-			new ButtonBuilder()
-				.setCustomId('clear')
-				.setLabel('Clear')
-				.setStyle(ButtonStyle.Danger)
-				.setDisabled(true)
-		);
 
 		// Create a play queue for the server
 		const queue = await player.getQueue(interaction.guildId);
@@ -92,14 +18,14 @@ module.exports = {
 			queue.play(queue.tracks.shift(), { immediate: true });
 		} else {
 			queue.destroy();
-			message({
+			request.message.message({
 				content: `Queue has ended. Add more songs to it to resume play.`,
 				embeds: [
 					new EmbedBuilder().setDescription(
 						`**Currently Playing**\n` + 'None' + `\n\n**Queue**\n`
 					),
 				],
-				components: [row],
+				components: [playerButtons.disabled],
 			});
 			return;
 		}
@@ -113,9 +39,9 @@ module.exports = {
 		});
 
 		// Update the discord message of where the player resides
-		message({
+		request.message.message({
 			content: `${prevSong}`,
-			components: [enableRow],
+			components: [playerButtons.enabled],
 		});
 	},
 };
