@@ -6,6 +6,8 @@ const {
 	ButtonStyle,
 } = require('discord.js');
 require('dotenv').config();
+const youtube_sr_1 = require('youtube-sr');
+const ytdl_core_1 = require('ytdl-core');
 
 module.exports = {
 	data: {
@@ -111,53 +113,49 @@ module.exports = {
 
 		// Variables for the string inside of the input modal
 		const url = await interaction.fields.getTextInputValue('songUrlInput');
-		const urlConditions = ['track', 'watch?v'];
 		const urlExclusions = ['www', 'http', 'https'];
 		const songPlaylist = url.includes('list');
 		let result;
 
+		const spotifyPlaylistRegex =
+			/https?:\/\/(?:embed\.|open\.)(?:spotify\.com\/)(?:playlist\/|\?uri=spotify:playlist:)((\w|-){22})/;
+		const spotifySongRegex =
+			/https?:\/\/(?:embed\.|open\.)(?:spotify\.com\/)(?:track\/|\?uri=spotify:track:)((\w|-){22})/;
+
 		// Check what the user input is and act accordingly
-		if (!urlExclusions.some((condition) => url.includes(condition))) {
+		if (spotifySongRegex.test(url)) {
+			console.log('ITS A SPOTIFY SONG');
+			result = await player.search(url, {
+				requestedBy: interaction.user,
+				searchEngine: QueryType.SPOTIFY_SONG,
+			});
+		} else if (
+			(0, ytdl_core_1.validateID)(url) ||
+			(0, ytdl_core_1.validateURL)(url)
+		) {
+			console.log('ITS A YT VIDEO');
+			result = await player.search(url, {
+				requestedBy: interaction.user,
+				searchEngine: QueryType.YOUTUBE_VIDEO,
+			});
+		} else if (spotifyPlaylistRegex.test(url)) {
+			console.log('ITS A SPOTIFY PLAYLIST');
+			result = await player.search(url, {
+				requestedBy: interaction.user,
+				searchEngine: QueryType.SPOTIFY_PLAYLIST,
+			});
+		} else if (youtube_sr_1.YouTube.isPlaylist(url)) {
+			console.log('ITS A YT PLAYLIST');
+			result = await player.search(url, {
+				requestedBy: interaction.user,
+				searchEngine: QueryType.YOUTUBE_PLAYLIST,
+			});
+		} else {
+			console.log('ITS A SEARCH QUERY');
 			result = await player.search(url, {
 				requestedBy: interaction.user,
 				searchEngine: QueryType.AUTO,
 			});
-		} else if (urlConditions.some((condition) => url.includes(condition))) {
-			// Search for the song using the discord-player
-			if (url.includes('spotify')) {
-				result = await player.search(url, {
-					requestedBy: interaction.user,
-					searchEngine: QueryType.SPOTIFY_SONG,
-				});
-			} else if (url.includes('youtube')) {
-				result = await player.search(url, {
-					requestedBy: interaction.user,
-					searchEngine: QueryType.YOUTUBE_VIDEO,
-				});
-			} else {
-				message({
-					content: `No songs found with ${url}`,
-					components: [row],
-				});
-			}
-		} else if (songPlaylist) {
-			// Search for the playlist using the discord-player
-			if (url.includes('spotify')) {
-				result = await player.search(url, {
-					requestedBy: interaction.user,
-					searchEngine: QueryType.SPOTIFY_PLAYLIST,
-				});
-			} else if (url.includes('youtube')) {
-				result = await player.search(url, {
-					requestedBy: interaction.user,
-					searchEngine: QueryType.YOUTUBE_PLAYLIST,
-				});
-			} else {
-				message({
-					content: `No playlists found with ${url}`,
-					components: [row],
-				});
-			}
 		}
 
 		// Check if request is a playlist or a song, discord-player has different methods depending on which it is
